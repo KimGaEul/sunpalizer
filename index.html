@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>딥 말투 변환기</title>
+<title>Sunpalizer</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -16,6 +16,80 @@ body {
 .container { max-width: 820px; margin: 0 auto; }
 h1 { font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
 .subtitle { font-size: 0.82rem; color: #666; margin-bottom: 24px; }
+
+/* API 키 모달 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+.modal {
+  background: #1a1a22;
+  border: 1px solid #3a3a55;
+  border-radius: 16px;
+  padding: 28px 24px;
+  max-width: 420px;
+  width: 100%;
+}
+.modal h2 { font-size: 1.1rem; color: #fff; margin-bottom: 6px; }
+.modal p { font-size: 0.82rem; color: #888; margin-bottom: 16px; line-height: 1.6; }
+.modal input {
+  width: 100%;
+  background: #13131a;
+  border: 1px solid #3a3a55;
+  border-radius: 10px;
+  color: #e0e0e0;
+  font-size: 0.88rem;
+  padding: 11px 14px;
+  outline: none;
+  margin-bottom: 12px;
+  font-family: monospace;
+}
+.modal input:focus { border-color: #5555bb; }
+.modal input::placeholder { color: #444; }
+.modal-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #4444aa, #6655cc);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 12px;
+  cursor: pointer;
+}
+.modal-btn:hover { opacity: 0.88; }
+.modal-note { font-size: 0.72rem; color: #444; margin-top: 10px; text-align: center; }
+
+/* API 키 상태바 */
+.api-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1a1a22;
+  border: 1px solid #2a2a38;
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 14px;
+  font-size: 0.78rem;
+  color: #666;
+}
+.api-bar span { color: #55aa55; }
+.api-change {
+  background: none;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #555;
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.api-change:hover { color: #aaa; border-color: #555; }
 
 .card {
   background: #1a1a22;
@@ -42,7 +116,6 @@ h1 { font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
   text-transform: none;
   letter-spacing: 0;
 }
-
 textarea {
   width: 100%;
   background: #13131a;
@@ -59,8 +132,6 @@ textarea {
 }
 textarea:focus { border-color: #5555bb; }
 textarea::placeholder { color: #3a3a4a; }
-
-/* 분석 결과 */
 .analysis-box {
   background: #13131a;
   border: 1px solid #2d2d45;
@@ -71,43 +142,16 @@ textarea::placeholder { color: #3a3a4a; }
   color: #aaaadd;
   white-space: pre-wrap;
   word-break: break-word;
-  display: none;
 }
-.analysis-box.visible { display: block; }
-.analysis-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #6666aa;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: 8px;
-}
-
-/* 슬라이더 */
 .slider-row {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 10px;
 }
-.slider-label {
-  font-size: 0.78rem;
-  color: #888;
-  min-width: 100px;
-}
-input[type=range] {
-  flex: 1;
-  accent-color: #6655cc;
-  height: 4px;
-}
-.slider-val {
-  font-size: 0.78rem;
-  color: #aaaadd;
-  min-width: 24px;
-  text-align: right;
-}
-
-/* 토글 */
+.slider-label { font-size: 0.78rem; color: #888; min-width: 100px; }
+input[type=range] { flex: 1; accent-color: #6655cc; height: 4px; }
+.slider-val { font-size: 0.78rem; color: #aaaadd; min-width: 24px; text-align: right; }
 .toggle-row {
   display: flex;
   align-items: center;
@@ -116,12 +160,7 @@ input[type=range] {
   font-size: 0.82rem;
   color: #888;
 }
-.toggle {
-  position: relative;
-  width: 36px;
-  height: 20px;
-  flex-shrink: 0;
-}
+.toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
 .toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
   position: absolute;
@@ -134,18 +173,14 @@ input[type=range] {
 .toggle-slider::before {
   content: '';
   position: absolute;
-  width: 14px;
-  height: 14px;
-  left: 3px;
-  top: 3px;
+  width: 14px; height: 14px;
+  left: 3px; top: 3px;
   background: #555;
   border-radius: 50%;
   transition: transform 0.2s, background 0.2s;
 }
 .toggle input:checked + .toggle-slider { background: #4444aa; }
 .toggle input:checked + .toggle-slider::before { transform: translateX(16px); background: #aaaaff; }
-
-/* 버튼들 */
 .btn-row { display: flex; gap: 10px; margin-bottom: 14px; }
 .analyze-btn, .convert-btn {
   flex: 1;
@@ -165,16 +200,22 @@ input[type=range] {
   padding: 12px 18px;
 }
 .analyze-btn:hover { background: #333350; }
-.convert-btn {
-  background: linear-gradient(135deg, #4444aa, #6655cc);
-  color: #fff;
-}
+.convert-btn { background: linear-gradient(135deg, #4444aa, #6655cc); color: #fff; }
 .convert-btn:hover { opacity: 0.88; }
 .convert-btn:active, .analyze-btn:active { transform: scale(0.99); }
 .convert-btn:disabled, .analyze-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-/* 출력 */
-.output-wrap { position: relative; }
+.output-label {
+  font-size: 0.72rem; font-weight: 700; color: #8888bb;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+}
+.badge {
+  background: #2a2a3a; color: #6666aa;
+  border-radius: 20px; padding: 2px 8px; font-size: 0.68rem;
+}
+.badge.done { background: #1a2a1a; color: #55aa55; }
+.badge.loading { background: #1a1a2a; color: #5555aa; }
+.badge.error { background: #2a1a1a; color: #aa5555; }
 .output-area {
   background: #13131a;
   border: 1px solid #2a2a38;
@@ -188,67 +229,25 @@ input[type=range] {
   word-break: break-word;
 }
 .output-area.empty { color: #333; font-style: italic; }
-.output-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #8888bb;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.badge {
-  background: #2a2a3a;
-  color: #6666aa;
-  border-radius: 20px;
-  padding: 2px 8px;
-  font-size: 0.68rem;
-}
-.badge.done { background: #1a2a1a; color: #55aa55; }
-.badge.loading { background: #1a1a2a; color: #5555aa; }
-.badge.error { background: #2a1a1a; color: #aa5555; }
-
 .copy-btn {
   margin-top: 8px;
-  background: #2a2a38;
-  border: none;
-  border-radius: 7px;
-  color: #888;
-  font-size: 0.78rem;
-  padding: 5px 12px;
-  cursor: pointer;
-  transition: background 0.2s;
+  background: #2a2a38; border: none; border-radius: 7px;
+  color: #888; font-size: 0.78rem; padding: 5px 12px; cursor: pointer;
 }
 .copy-btn:hover { background: #3a3a55; color: #fff; }
-
 .loading-dots span { animation: blink 1.2s infinite; color: #6666cc; }
 .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
 .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes blink { 0%,80%,100% { opacity: 0.15; } 40% { opacity: 1; } }
-
 .preset-btn {
-  background: #1e1e2e;
-  border: 1px solid #333355;
-  border-radius: 7px;
-  color: #7777cc;
-  font-size: 0.75rem;
-  padding: 4px 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 8px;
-  display: inline-block;
+  background: #1e1e2e; border: 1px solid #333355;
+  border-radius: 7px; color: #7777cc; font-size: 0.75rem;
+  padding: 4px 10px; cursor: pointer; margin-bottom: 8px; display: inline-block;
 }
 .preset-btn:hover { background: #2a2a45; color: #aaaaff; }
-
 .step-indicator {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  font-size: 0.75rem;
-  color: #444;
-  margin-bottom: 10px;
+  display: flex; gap: 6px; align-items: center;
+  font-size: 0.75rem; color: #444; margin-bottom: 10px;
 }
 .step { padding: 3px 10px; border-radius: 20px; background: #1e1e28; color: #555; font-size: 0.72rem; }
 .step.active { background: #2d2d50; color: #9999dd; }
@@ -257,9 +256,26 @@ input[type=range] {
 </style>
 </head>
 <body>
+
+<!-- API 키 모달 -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>🔑 API 키를 입력해주세요</h2>
+    <p>Anthropic API 키가 필요해요.<br>키는 브라우저에만 저장되고 외부로 전송되지 않아요.</p>
+    <input type="password" id="api-key-input" placeholder="sk-ant-xxxxxxxxxxxxxxxx">
+    <button class="modal-btn" onclick="saveApiKey()">시작하기</button>
+    <p class="modal-note">키 발급: console.anthropic.com → API Keys</p>
+  </div>
+</div>
+
 <div class="container">
-  <h1>🔬 딥 말투 변환기</h1>
-  <p class="subtitle">말투를 먼저 분석한 뒤, 그 특징을 기반으로 변환해요.</p>
+  <h1>✍️ Sunpalizer</h1>
+  <p class="subtitle">선팔님 말투로 변환해드립니다 -0-;;</p>
+
+  <div class="api-bar">
+    <span>🟢 API 키 연결됨</span>
+    <button class="api-change" onclick="changeApiKey()">키 변경</button>
+  </div>
 
   <div class="step-indicator">
     <div class="step active" id="step1">① 예시 입력</div>
@@ -269,28 +285,24 @@ input[type=range] {
     <div class="step" id="step3">③ 텍스트 변환</div>
   </div>
 
-  <!-- 말투 예시 -->
   <div class="card">
     <div class="card-label">
       📝 말투 예시
       <span class="tip">많을수록 정확해요 (10개+ 권장)</span>
     </div>
-    <button class="preset-btn" onclick="loadPreset()">📎 예시 그대로 불러오기</button>
-    <textarea id="samples" rows="8" placeholder="그 사람이 실제로 쓴 문장들을 붙여넣으세요.
-ㄴ 답글 형식, 이모티콘, 특이한 표현 등 전부 포함해서 넣을수록 좋아요."></textarea>
+    <button class="preset-btn" onclick="loadPreset()">📎 선팔님 예시 불러오기</button>
+    <textarea id="samples" rows="8" placeholder="그 사람이 실제로 쓴 문장들을 붙여넣으세요."></textarea>
   </div>
 
-  <!-- 분석 결과 -->
   <div class="card" id="analysis-card" style="display:none">
     <div class="card-label">🧠 말투 분석 결과</div>
-    <div class="analysis-box visible" id="analysis-output"></div>
+    <div class="analysis-box" id="analysis-output"></div>
   </div>
 
-  <!-- 변환 설정 -->
   <div class="card">
     <div class="card-label">⚙️ 변환 설정</div>
     <div class="slider-row">
-      <span class="slider-label">이야기 덧 붙이기 강도</span>
+      <span class="slider-label">사족/TMI 강도</span>
       <input type="range" min="0" max="3" value="2" id="tmi-level" oninput="updateSlider(this,'tmi-val')">
       <span class="slider-val" id="tmi-val">2</span>
     </div>
@@ -300,34 +312,25 @@ input[type=range] {
       <span class="slider-val" id="reply-val">1</span>
     </div>
     <div class="toggle-row">
-      <label class="toggle">
-        <input type="checkbox" id="toggle-emoji" checked>
-        <div class="toggle-slider"></div>
-      </label>
-      <span>이모티콘 사용 <span style="color:#555;font-size:0.75rem">(-0- ;; =ㅂ= 류)</span></span>
+      <label class="toggle"><input type="checkbox" id="toggle-emoji" checked><div class="toggle-slider"></div></label>
+      <span>특이 이모티콘 사용 <span style="color:#555;font-size:0.75rem">(-0- ;; =ㅂ= 류)</span></span>
     </div>
     <div class="toggle-row">
-      <label class="toggle">
-        <input type="checkbox" id="toggle-semico" checked>
-        <div class="toggle-slider"></div>
-      </label>
+      <label class="toggle"><input type="checkbox" id="toggle-semico" checked><div class="toggle-slider"></div></label>
       <span>세미콜론/말줄임 사용 <span style="color:#555;font-size:0.75rem">(;; ... ㅋ 류)</span></span>
     </div>
   </div>
 
-  <!-- 입력 -->
   <div class="card">
     <div class="card-label">💬 변환할 텍스트</div>
     <textarea id="input-text" rows="4" placeholder="변환하고 싶은 문장을 입력하세요."></textarea>
   </div>
 
-  <!-- 버튼 -->
   <div class="btn-row">
     <button class="analyze-btn" id="analyze-btn" onclick="analyze()">🔍 말투 분석</button>
     <button class="convert-btn" id="convert-btn" onclick="convert()">🔁 말투 변환하기</button>
   </div>
 
-  <!-- 출력 -->
   <div class="card">
     <div class="output-label">
       ✨ 변환 결과
@@ -353,15 +356,31 @@ const PRESET = `바꿔말해버렸네요;;; 낄-0-;;
 ㄴ 개기면 자르거든어제 debaser 선정으로, 한국에서 시끄러운 밴드 19선인가 중에 하나로 보이더군요
 ㄴ 디베이저 공식 인스타에서 확인됨 ㅋ`;
 
+let apiKey = '';
 let analysisResult = '';
 
-function loadPreset() {
-  document.getElementById('samples').value = PRESET;
+// 시작 시 키 확인
+window.onload = () => {
+  const saved = sessionStorage.getItem('sunpal_key');
+  if (saved) { apiKey = saved; hideModal(); }
+};
+
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val.startsWith('sk-')) { alert('올바른 API 키를 입력해주세요 (sk-로 시작)'); return; }
+  apiKey = val;
+  sessionStorage.setItem('sunpal_key', val);
+  hideModal();
 }
 
-function updateSlider(el, valId) {
-  document.getElementById(valId).textContent = el.value;
+function hideModal() { document.getElementById('modal').style.display = 'none'; }
+function changeApiKey() {
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('modal').style.display = 'flex';
 }
+
+function loadPreset() { document.getElementById('samples').value = PRESET; }
+function updateSlider(el, id) { document.getElementById(id).textContent = el.value; }
 
 function setStep(n) {
   [1,2,3].forEach(i => {
@@ -369,17 +388,36 @@ function setStep(n) {
     el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
   });
 }
-
 function setBadge(text, cls) {
   const b = document.getElementById('status-badge');
   b.textContent = text;
-  b.className = 'badge' + (cls ? ' ' + cls : '');
+  b.className = 'badge' + (cls ? ' '+cls : '');
+}
+
+async function callApi(system, userMsg) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      max_tokens: 1000,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: userMsg }
+      ]
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.choices?.[0]?.message?.content || '';
 }
 
 async function analyze() {
   const samples = document.getElementById('samples').value.trim();
   if (!samples) { alert('말투 예시를 먼저 입력해주세요!'); return; }
-
   const btn = document.getElementById('analyze-btn');
   const card = document.getElementById('analysis-card');
   const out = document.getElementById('analysis-output');
@@ -387,16 +425,9 @@ async function analyze() {
   card.style.display = 'block';
   out.innerHTML = '<div class="loading-dots"><span>●</span><span>●</span><span>●</span></div>';
   setStep(2);
-
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: `너는 언어학자야. 주어진 말투 예시를 분석해서, 이 사람의 말투를 재현하기 위한 핵심 특징들을 한국어로 간결하게 정리해줘.
-아래 항목으로 분석해:
+    analysisResult = await callApi(
+      `너는 언어학자야. 주어진 말투 예시를 분석해서 핵심 특징을 한국어로 정리해줘.
 1. 이모티콘/기호 패턴
 2. 문장 끝맺음 특징
 3. TMI/사족 추가 방식
@@ -404,20 +435,14 @@ async function analyze() {
 5. 어휘/줄임말 특징
 6. 리듬감/호흡
 7. 전반적인 성격
-
 각 항목은 짧게, 예시와 함께 써줘.`,
-        messages: [{ role: 'user', content: `분석해줘:\n\n${samples}` }]
-      })
-    });
-    const data = await res.json();
-    analysisResult = data.content?.map(b => b.text || '').join('') || '';
+      `분석해줘:\n\n${samples}`
+    );
     out.textContent = analysisResult;
     setStep(3);
   } catch(e) {
     out.textContent = '분석 실패: ' + e.message;
-  } finally {
-    btn.disabled = false;
-  }
+  } finally { btn.disabled = false; }
 }
 
 function buildSystemPrompt(samples) {
@@ -425,66 +450,30 @@ function buildSystemPrompt(samples) {
   const reply = parseInt(document.getElementById('reply-level').value);
   const emoji = document.getElementById('toggle-emoji').checked;
   const semico = document.getElementById('toggle-semico').checked;
-
-  const tmiDesc = ['사족 없이 핵심만', '가끔 짧은 TMI 추가', 'TMI/부연설명을 꽤 자주 덧붙임', 'TMI 투성이, 본론보다 사족이 더 길어도 됨'][tmi];
-  const replyDesc = ['ㄴ 답글 없음', 'ㄴ 답글 1개 정도 추가 가능', 'ㄴ 답글로 계속 이어 말하기'][reply];
-
+  const tmiDesc = ['사족 없이 핵심만','가끔 짧은 TMI 추가','TMI/부연설명을 꽤 자주 덧붙임','TMI 투성이, 본론보다 사족이 더 길어도 됨'][tmi];
+  const replyDesc = ['ㄴ 답글 없음','ㄴ 답글 1개 정도 추가 가능','ㄴ 답글로 계속 이어 말하기'][reply];
   let constraints = '';
   if (!emoji) constraints += '\n- 특이 이모티콘(-0-, =ㅂ= 등)은 쓰지 마';
   if (!semico) constraints += '\n- ;; ... ㅋ 같은 기호 최소화해';
-
-  const analysisSection = analysisResult
-    ? `\n\n【말투 분석 결과 (이걸 기반으로 변환해)】\n${analysisResult}`
-    : '';
-
-  return `너는 말투 변환 전문가야. 아래 사람의 말투로 텍스트를 변환해줘.
-
-【말투 예시】
-${samples}
-${analysisSection}
-
-【변환 설정】
-- TMI/사족: ${tmiDesc}
-- ㄴ 답글: ${replyDesc}
-${constraints}
-
-규칙:
-- 원문의 핵심 의미는 반드시 유지해
-- 이 사람 특유의 호흡, 리듬, 어미를 살려
-- 사족은 자연스럽게 흘러가듯 붙여, 억지로 끼워넣지 마
-- 설명 없이 변환 결과만 출력해`;
+  const analysisSection = analysisResult ? `\n\n【말투 분석 결과】\n${analysisResult}` : '';
+  return `너는 말투 변환 전문가야.\n\n【말투 예시】\n${samples}${analysisSection}\n\n【변환 설정】\n- TMI/사족: ${tmiDesc}\n- ㄴ 답글: ${replyDesc}${constraints}\n\n규칙:\n- 원문의 핵심 의미는 반드시 유지해\n- 이 사람 특유의 호흡, 리듬, 어미를 살려\n- 설명 없이 변환 결과만 출력해`;
 }
 
 async function convert() {
   const samples = document.getElementById('samples').value.trim();
   const inputText = document.getElementById('input-text').value.trim();
-
   if (!samples) { alert('말투 예시를 먼저 입력해주세요!'); return; }
   if (!inputText) { alert('변환할 텍스트를 입력해주세요!'); return; }
-
   const btn = document.getElementById('convert-btn');
   const output = document.getElementById('output');
   const copyBtn = document.getElementById('copy-btn');
-
   btn.disabled = true;
   setBadge('변환중...', 'loading');
   output.className = 'output-area';
   output.innerHTML = '<div class="loading-dots"><span>●</span><span>●</span><span>●</span></div>';
   copyBtn.style.display = 'none';
-
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: buildSystemPrompt(samples),
-        messages: [{ role: 'user', content: inputText }]
-      })
-    });
-    const data = await res.json();
-    const result = data.content?.map(b => b.text || '').join('') || '변환 실패';
+    const result = await callApi(buildSystemPrompt(samples), inputText);
     output.className = 'output-area';
     output.textContent = result;
     setBadge('완료 ✓', 'done');
@@ -493,9 +482,7 @@ async function convert() {
     output.className = 'output-area empty';
     output.textContent = '오류: ' + e.message;
     setBadge('오류', 'error');
-  } finally {
-    btn.disabled = false;
-  }
+  } finally { btn.disabled = false; }
 }
 
 function copyOutput() {
