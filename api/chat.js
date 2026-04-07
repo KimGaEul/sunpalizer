@@ -13,7 +13,7 @@ export default async function handler(req, res) {
         'X-Title': 'Sunpalizer'
       },
       body: JSON.stringify({
-        model: 'google/gemma-3-27b-it:free',
+        model: 'qwen/qwen3.6-plus:free',
         max_tokens: 1000,
         messages: [
           { role: 'system', content: system },
