@@ -361,7 +361,7 @@ let analysisResult = '';
 
 // 시작 시 키 확인
 window.onload = () => {
-  const saved = sessionStorage.getItem('sunpal_key');
+  const saved = localStorage.getItem('sunpal_key');
   if (saved) { apiKey = saved; hideModal(); }
 };
 
@@ -369,7 +369,7 @@ function saveApiKey() {
   const val = document.getElementById('api-key-input').value.trim();
   if (!val.startsWith('sk-')) { alert('올바른 API 키를 입력해주세요 (sk-로 시작)'); return; }
   apiKey = val;
-  sessionStorage.setItem('sunpal_key', val);
+  localStorage.setItem('sunpal_key', val);
   hideModal();
 }
 
