@@ -13,7 +13,7 @@ export default async function handler(req, res) {
         'X-Title': 'Sunpalizer'
       },
       body: JSON.stringify({
-        model: 'qwen/qwen3.6-plus:free',
+        model: 'mistralai/mistral-7b-instruct:free',
         max_tokens: 1000,
         messages: [
           { role: 'system', content: system },
